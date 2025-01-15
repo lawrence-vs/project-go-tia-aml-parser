@@ -191,16 +191,16 @@ func main() {
 	processInternalElements(caexFile.InstanceHierarchy.InternalElement, 0)
 
 	// Export RAW information to Excel
-	// excelPath := "../raw_export.xlsx"
-	// err = exportToExcel(caexFile.InstanceHierarchy, excelPath)
-	// if err != nil {
-	// 	fmt.Printf("Error exporting RAW Info to Excel: %v\n", err)
-	// 	return
-	// }
-	// fmt.Printf("Raw Information successfully exported to %s\n", excelPath)
+	excelPath := "../raw_export.xlsx"
+	err = exportToExcel(caexFile.InstanceHierarchy, excelPath)
+	if err != nil {
+		fmt.Printf("Error exporting RAW Info to Excel: %v\n", err)
+		return
+	}
+	fmt.Printf("Raw Information successfully exported to %s\n", excelPath)
 
 	// Export attributes grouped by element to Excel
-	excelPath := "../grouped_attributes_export.xlsx"
+	excelPath = "../grouped_attributes_export.xlsx"
 	err = exportAttributesByElement(caexFile.InstanceHierarchy, excelPath)
 	if err != nil {
 		fmt.Printf("Error exporting grouped attributes to Excel: %v\n", err)
