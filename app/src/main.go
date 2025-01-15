@@ -47,7 +47,7 @@ func processInternalElements(elements []InternalElement, depth int) {
 
 func main() {
 	// Open the XML file
-	xmlFile, err := os.Open("../example.xml")
+	xmlFile, err := os.Open("./app/example.xml")
 	if err != nil {
 		fmt.Println("Error opening XML file:", err)
 		return

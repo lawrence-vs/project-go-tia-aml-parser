@@ -1,0 +1,1 @@
+go run app/src/main.go
