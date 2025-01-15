@@ -36,7 +36,7 @@ async def upload_file(
     # Run the Go application to process the XML file
     try:
         result = subprocess.run(
-            ["go", "run", GO_MAIN_FILE],
+            ["go", "run", GO_MAIN_FILE, xml_file_path, excel_file_path],
             cwd=OUTPUT_DIR,
             capture_output=True,
             text=True,

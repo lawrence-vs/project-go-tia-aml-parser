@@ -168,8 +168,17 @@ func exportAttributesByElement(instanceHierarchy InstanceHierarchy, filePath str
 }
 
 func main() {
+	// Ensure the file paths are passed as arguments (XML file and output path)
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: go run main.go <XML_FILE_PATH> <OUTPUT_FILE_PATH>")
+		return
+	}
+
+	xmlFilePath := os.Args[1]
+	excelFilePath := os.Args[2]
+
 	// Open the XML file
-	xmlFile, err := os.Open("../example.xml")
+	xmlFile, err := os.Open(xmlFilePath)
 	if err != nil {
 		fmt.Println("Error opening XML file:", err)
 		return
@@ -191,20 +200,18 @@ func main() {
 	processInternalElements(caexFile.InstanceHierarchy.InternalElement, 0)
 
 	// Export RAW information to Excel
-	excelPath := "../raw_export.xlsx"
-	err = exportToExcel(caexFile.InstanceHierarchy, excelPath)
+	err = exportToExcel(caexFile.InstanceHierarchy, excelFilePath)
 	if err != nil {
 		fmt.Printf("Error exporting RAW Info to Excel: %v\n", err)
 		return
 	}
-	fmt.Printf("Raw Information successfully exported to %s\n", excelPath)
+	fmt.Printf("Raw Information successfully exported to %s\n", excelFilePath)
 
 	// Export attributes grouped by element to Excel
-	excelPath = "../grouped_attributes_export.xlsx"
-	err = exportAttributesByElement(caexFile.InstanceHierarchy, excelPath)
+	err = exportAttributesByElement(caexFile.InstanceHierarchy, excelFilePath)
 	if err != nil {
 		fmt.Printf("Error exporting grouped attributes to Excel: %v\n", err)
 		return
 	}
-	fmt.Printf("Grouped attributes successfully exported to %s\n", excelPath)
+	fmt.Printf("Grouped attributes successfully exported to %s\n", excelFilePath)
 }
