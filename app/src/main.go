@@ -95,6 +95,78 @@ func exportToExcel(instanceHierarchy InstanceHierarchy, filePath string) error {
 	return nil
 }
 
+func exportAttributesByElement(instanceHierarchy InstanceHierarchy, filePath string) error {
+	f := excelize.NewFile()
+	sheetName := "GroupedAttributes"
+
+	// Create a new sheet
+	index, err := f.NewSheet(sheetName)
+	if err != nil {
+		return fmt.Errorf("failed to create sheet: %v", err)
+	}
+	f.SetActiveSheet(index)
+
+	// Step 1: Collect all unique attribute names
+	uniqueAttributeNames := map[string]struct{}{}
+	var collectAttributes func(elements []InternalElement)
+
+	collectAttributes = func(elements []InternalElement) {
+		for _, elem := range elements {
+			for _, attr := range elem.Attribute {
+				uniqueAttributeNames[attr.Name] = struct{}{}
+			}
+			collectAttributes(elem.InternalElement)
+		}
+	}
+	collectAttributes(instanceHierarchy.InternalElement)
+
+	// Convert map keys to a slice for ordered iteration
+	attributeNames := make([]string, 0, len(uniqueAttributeNames))
+	for name := range uniqueAttributeNames {
+		attributeNames = append(attributeNames, name)
+	}
+
+	// Step 2: Write column headers
+	f.SetCellValue(sheetName, "A1", "Element Name") // First column for element names
+	for col, attrName := range attributeNames {
+		cell := fmt.Sprintf("%s1", string('B'+col))
+		f.SetCellValue(sheetName, cell, attrName)
+	}
+
+	// Step 3: Write rows grouped by element name
+	var rowIndex int = 2
+	var writeRows func(elements []InternalElement)
+
+	writeRows = func(elements []InternalElement) {
+		for _, elem := range elements {
+			f.SetCellValue(sheetName, fmt.Sprintf("A%d", rowIndex), elem.Name) // Write element name
+
+			// Fill attribute values in corresponding columns
+			attrMap := map[string]string{}
+			for _, attr := range elem.Attribute {
+				attrMap[attr.Name] = attr.Value
+			}
+
+			for col, attrName := range attributeNames {
+				cell := fmt.Sprintf("%s%d", string('B'+col), rowIndex)
+				if value, exists := attrMap[attrName]; exists {
+					f.SetCellValue(sheetName, cell, value)
+				}
+			}
+			rowIndex++
+			writeRows(elem.InternalElement) // Process nested elements
+		}
+	}
+	writeRows(instanceHierarchy.InternalElement)
+
+	// Save the Excel file
+	if err := f.SaveAs(filePath); err != nil {
+		return fmt.Errorf("failed to save Excel file: %v", err)
+	}
+
+	return nil
+}
+
 func main() {
 	// Open the XML file
 	xmlFile, err := os.Open("../example.xml")
@@ -118,13 +190,21 @@ func main() {
 	fmt.Println("====================")
 	processInternalElements(caexFile.InstanceHierarchy.InternalElement, 0)
 
-	// Export to Excel
-	excelPath := "../test.xlsx"
-	err = exportToExcel(caexFile.InstanceHierarchy, excelPath)
+	// Export RAW information to Excel
+	// excelPath := "../test.xlsx"
+	// err = exportToExcel(caexFile.InstanceHierarchy, excelPath)
+	// if err != nil {
+	// 	fmt.Printf("Error exporting RAW Info to Excel: %v\n", err)
+	// 	return
+	// }
+	// fmt.Printf("Raw Information successfully exported to %s\n", excelPath)
+
+	// Export attributes grouped by element to Excel
+	excelPath := "../grouped_attributes.xlsx"
+	err = exportAttributesByElement(caexFile.InstanceHierarchy, excelPath)
 	if err != nil {
-		fmt.Printf("Error exporting to Excel: %v\n", err)
+		fmt.Printf("Error exporting grouped attributes to Excel: %v\n", err)
 		return
 	}
-
-	fmt.Printf("Data successfully exported to %s\n", excelPath)
+	fmt.Printf("Grouped attributes successfully exported to %s\n", excelPath)
 }
