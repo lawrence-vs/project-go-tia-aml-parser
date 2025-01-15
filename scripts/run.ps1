@@ -1,0 +1,1 @@
+docker run --rm -vit ../app:/app tia-aml-parser bash

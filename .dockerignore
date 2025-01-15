@@ -1,0 +1,10 @@
+# Exclude the local binary
+app
+
+# Exclude temporary files
+*.log
+*.out
+*.tmp
+
+# Exclude version control files
+.git
