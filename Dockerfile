@@ -2,16 +2,17 @@
 FROM golang:1.20
 
 # Copy go.mod and go.sum files to the container
-COPY /app ./
+COPY /app ./run.sh ./
 
 # Set the working directory in the container
 WORKDIR /app/src
 
 # Download dependencies
-RUN go mod download
-
-# Build the Go application
-# RUN go build -o app .
+RUN mod init tia-aml-parser \
+&& go mod download \
+&& go install github.com/xuri/excelize/v2@latest \
+&& go mod tidy \
+&& go build -o tia-aml-parser
 
 # Command to run the application
 CMD ["bash"]
