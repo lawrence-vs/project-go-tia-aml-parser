@@ -3,12 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
+    <title>File Upload and Download</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <h1>Upload File</h1>
+    <form id="upload-form" enctype="multipart/form-data" method="post">
+        <input type="file" name="file" required>
+        <br/>
+        <input type="text" name="custom_name" placeholder="Custom Excel Filename" required>
+        <br/>
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="download-container"></div>
+
     <script>
-        async function uploadFile(event) {
+        document.getElementById("upload-form").addEventListener("submit", async function(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
-
             try {
                 const response = await fetch("/upload/", {
                     method: "POST",
@@ -17,13 +30,12 @@
 
                 const data = await response.json();
                 if (response.ok) {
-                    // Show popup with the success message
+                    // Show success message
                     alert(`Success: ${data.message}`);
 
                     // Create a download link
                     const downloadLink = document.createElement("a");
                     downloadLink.href = data.output_file;
-                    downloadLink.download = true; // Suggest downloading
                     downloadLink.textContent = "Click here to download the file";
                     document.getElementById("download-container").appendChild(downloadLink);
 
@@ -38,20 +50,7 @@
                 console.error("Upload failed:", error);
                 alert("An error occurred while uploading the file.");
             }
-        }
+        });
     </script>
-</head>
-<body>
-    <h1>Upload XML File</h1>
-    <form id="upload-form" onsubmit="uploadFile(event)">
-        <label for="file">Choose XML File:</label>
-        <input type="file" id="file" name="file" required>
-        <br><br>
-        <label for="custom_name">Custom Excel Name:</label>
-        <input type="text" id="custom_name" name="custom_name" required>
-        <br><br>
-        <button type="submit">Upload</button>
-    </form>
-    <div id="download-container"></div>
 </body>
 </html>

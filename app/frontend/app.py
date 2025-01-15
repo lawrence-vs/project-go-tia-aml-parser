@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, Form, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
@@ -23,16 +23,15 @@ async def index(request: Request):
 @app.post("/upload/")
 async def upload_file(
     file: UploadFile = File(...),
-    custom_name: str = Form(...)
+    custom_name: str = Form(...),
 ):
-    # Save the uploaded XML file
+    # Save the uploaded XML file to the backend directory
     xml_file_path = os.path.join(OUTPUT_DIR, file.filename)
     with open(xml_file_path, "wb") as xml_file:
         xml_file.write(await file.read())
 
-    # Prepare output Excel file path
-    excel_file_name = f"{custom_name}.xlsx"
-    excel_file_path = os.path.join(OUTPUT_DIR, excel_file_name)
+    # Prepare output Excel file path in the backend directory
+    excel_file_path = os.path.join(OUTPUT_DIR, f"{custom_name}.xlsx")
 
     # Run the Go application to process the XML file
     try:
@@ -44,18 +43,17 @@ async def upload_file(
             check=True
         )
     except subprocess.CalledProcessError as e:
-        return JSONResponse(content={"error": f"Error running Go backend: {e.stderr}"}, status_code=500)
+        return {"error": f"Error running Go backend: {e.stderr}"}
 
-    return JSONResponse(
-        content={
-            "message": "File processed successfully",
-            "output_file": f"/files/{excel_file_name}"
-        }
-    )
+    # Return a response with the generated file's path
+    return {
+        "message": "File processed successfully",
+        "output_file": f"/files/{custom_name}.xlsx"
+    }
 
 @app.get("/files/{filename}")
 async def get_file(filename: str):
     file_path = os.path.join(OUTPUT_DIR, filename)
     if not os.path.exists(file_path):
-        return JSONResponse(content={"error": "File not found"}, status_code=404)
-    return FileResponse(file_path, headers={"Content-Disposition": f"attachment; filename={filename}"})
+        return {"error": "File not found"}
+    return FileResponse(file_path)
