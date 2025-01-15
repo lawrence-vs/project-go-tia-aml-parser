@@ -13,8 +13,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # Path to the Go application (located in the backend directory)
-GO_MAIN_FILE = "../backend/main.go"
-OUTPUT_DIR = "../backend/"
+GO_MAIN_FILE = os.path.abspath("../backend/main.go")
+OUTPUT_DIR = os.path.abspath("../backend/")
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -33,11 +33,12 @@ async def upload_file(
     # Prepare output Excel file path in the backend directory
     excel_file_path = os.path.join(OUTPUT_DIR, f"{custom_name}.xlsx")
 
+    print(f"Running Go with paths:\n  GO_MAIN_FILE: {GO_MAIN_FILE}\n  xml_file_path: {xml_file_path}\n  excel_file_path: {excel_file_path}")
     # Run the Go application to process the XML file
     try:
         result = subprocess.run(
             ["go", "run", GO_MAIN_FILE, xml_file_path, excel_file_path],
-            cwd=OUTPUT_DIR,
+            cwd=os.path.dirname(GO_MAIN_FILE),
             capture_output=True,
             text=True,
             check=True
